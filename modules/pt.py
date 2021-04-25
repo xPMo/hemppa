@@ -78,3 +78,14 @@ class MatrixModule(BotModule):
 
     def help(self):
         return ('PeerTube search')
+
+    def long_help(self, bot=None, event=None, **kwargs):
+        text = self.help() + (
+                '\n- !pt [query]: search this peertube instance and show the first result'
+                '\n- !ptall [query]: search this peertube instance and show all results'
+                '\n- !pt showinstance: show the current instance url'
+                )
+        if bot and event and bot.is_owner(event):
+            text += ('\n- !pt setinstance [url]: Set the instance url'
+                    )
+        return text
