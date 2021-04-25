@@ -56,7 +56,7 @@ class MatrixModule(BotModule):
                 bot.must_be_admin(room, event)
                 await self.clear_uri_cache(bot, room)
             elif args[1] == "help":
-                await self.command_help(bot, room)
+                await self.long_help(bot=bot, room=room, event=event)
             else:
                 date = args[1]
                 if re.match(self.APOD_DATE_PATTERN, date) is not None:
@@ -136,14 +136,18 @@ class MatrixModule(BotModule):
         bot.save_settings()
         await bot.send_text(room, "cleared uri cache")
 
-    async def command_help(self, bot, room):
-        msg = """commands:
-        - YYYY-MM-DD - date of the APOD image to retrieve (ex. 2020-03-15)
-        - stats - show information about uri cache
-        - clear - clear uri cache (Must be done as admin)
-        - apikey [api-key] - set the nasa api key (Must be done as bot owner)
-        - help - show command help
-        """
+    async def long_help(self, bot=None, event=None, room=None, **kwargs):
+        text = self.help() + (
+                '\n- !apod help: show this help'
+                '\n- !apod [YYYY-MM-DD]: date of APOD image to retrieve (ex. 2020-03-15)'
+                '\n- !apod stats: show information about the uri cache'
+                )
+        if bot and event and bot.is_admin(event):
+            text += ('\n- !apod clear: clear uri cache'
+                    )
+        if bot and event and bot.is_owner(event):
+            text += ('\n- !apod apikey [api-key]: set the api key'
+                    )
         await bot.send_text(room, msg)
 
     async def update_api_key(self, bot, room, event, apikey):
