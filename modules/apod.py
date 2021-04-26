@@ -143,10 +143,12 @@ class MatrixModule(BotModule):
                 '\n- !apod stats: show information about the uri cache'
                 )
         if bot and event and bot.is_admin(event):
-            text += ('\n- !apod clear: clear uri cache'
+            text += ('\nRoom admin commands:'
+                     '\n- !apod clear: clear uri cache'
                     )
         if bot and event and bot.is_owner(event):
-            text += ('\n- !apod apikey [api-key]: set the api key'
+            text += ('\nBot owner commands:'
+                     '\n- !apod apikey [api-key]: set the api key'
                     )
         await bot.send_text(room, msg)
 

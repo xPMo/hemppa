@@ -86,6 +86,7 @@ class MatrixModule(BotModule):
                 '\n- !pt showinstance: show the current instance url'
                 )
         if bot and event and bot.is_owner(event):
-            text += ('\n- !pt setinstance [url]: Set the instance url'
+            text += ('\nBot owner commands:'
+                     '\n- !pt setinstance [url]: Set the instance url'
                     )
         return text

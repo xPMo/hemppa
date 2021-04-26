@@ -68,6 +68,7 @@ class MatrixModule(BotModule):
                 '\n- "!alias (list|ls)": list defined aliases'
                 '\n- "!alias help": show this help')
         if bot and event and bot.is_owner(event):
-            text += ('\n- "!alias (remove|rm) [name]": remove an alias'
+            text += ('\nBot owner commands:'
+                     '\n- "!alias (remove|rm) [name]": remove an alias'
                      '\n- "!alias add [name] [command]": add an alias for [command]')
         return text

@@ -130,5 +130,7 @@ class MatrixModule(BotModule):
             '\n- "!wafull [query]": Query WolframAlpha and return all pods'
             )
         if bot and event and bot.is_owner(event):
-            text += '\n- "!wa appid [appid]": Set appid'
+            text += ('\nBot owner commands:'
+                     '\n- "!wa appid [appid]": Set appid'
+                    )
         return text
