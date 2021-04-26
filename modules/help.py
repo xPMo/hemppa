@@ -36,34 +36,38 @@ class MatrixModule(BotModule):
                     await bot.send_text(room, '!help will now message users instead of posting to the room')
                 else:
                     self.msg_users = False
-                    bot.send_text(room, '!help will now post to the room instead of messaging users')
+                    await bot.send_text(room, '!help will now post to the room instead of messaging users')
                 bot.save_settings()
             else:
                 await bot.send_text(room, f'Not a !help setting: {args[0]}')
+            return
 
-
-        if len(args) == 1:
-            msg = ''
+        if len(args):
+            msg = []
             modulename = args.pop(0)
             moduleobject = bot.modules.get(modulename)
+            if not moduleobject:
+                return await bot.send_text(room, f'Not a module: {modulename}')
             if not moduleobject.enabled:
-                msg += f'{modulename} is disabled\n'
+                msg.append(f'({modulename} is disabled)')
             try:
-                msg += moduleobject.long_help(bot=bot, room=room, event=event, args=args)
+                msg.append(moduleobject.long_help(bot=bot, room=room, event=event, args=args))
             except AttributeError:
-                msg += f'{modulename} has no help'
+                msg.append(f'{modulename} has no help')
+            msg = '\n'.join(msg)
 
         else:
-            msg = f'This is Hemppa {bot.version}, a generic Matrix bot. Known commands:\n\n'
+            msg = [f'This is Hemppa {bot.version}, a generic Matrix bot. Known commands:']
 
             for modulename, moduleobject in bot.modules.items():
                 if moduleobject.enabled:
-                    msg = msg + '!' + modulename
                     try:
-                        msg = msg + ' - ' + moduleobject.help() + '\n'
+                        msg.append(f'- !{modulename}: {moduleobject.help()}')
                     except AttributeError:
-                        pass
-            msg = msg + "\nMore information at https://github.com/vranki/hemppa"
+                        msg.append(f'- !{modulename}')
+            msg.append('More information at https://github.com/vranki/hemppa')
+            msg = '\n'.join(msg)
+
         if self.msg_users:
             await bot.send_msg(event.sender, f'Chat with {bot.matrix_user}', msg)
         else:
