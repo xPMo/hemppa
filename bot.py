@@ -89,9 +89,9 @@ class Bot:
             text = f"{url}"
 
         if matrix_uri is not None:
-            await self.send_image(room, matrix_uri, text, mimetype, w, h, size)
+            return await self.send_image(room, matrix_uri, text, mimetype, w, h, size)
         else:
-            await self.send_text(room, "sorry. something went wrong uploading the image to matrix server :(")
+            return await self.send_text(room, "sorry. something went wrong uploading the image to matrix server :(")
 
     # Helper function to upload a image from URL to homeserver. Use send_image() to actually send it to room.
     async def upload_image(self, url, blob=False, blob_content_type="image/png"):
@@ -144,7 +144,7 @@ class Bot:
         :param body: Textual content of the message
         :param msgtype: The message type for the room https://matrix.org/docs/spec/client_server/latest#m-room-message-msgtypes
         :param bot_ignore: Flag to mark the message to be ignored by the bot
-        :return:
+        :return: The response from client.room_send
         """
 
         msg = {
@@ -154,7 +154,7 @@ class Bot:
         if bot_ignore:
             msg["org.vranki.hemppa.ignore"] = "true"
 
-        await self.client.room_send(room.room_id, 'm.room.message', msg)
+        return await self.client.room_send(room.room_id, 'm.room.message', msg)
 
     async def send_html(self, room, html, plaintext, msgtype="m.notice", bot_ignore=False):
         """
@@ -164,7 +164,7 @@ class Bot:
         :param plaintext: Plaintext content of the message
         :param msgtype: The message type for the room https://matrix.org/docs/spec/client_server/latest#m-room-message-msgtypes
         :param bot_ignore: Flag to mark the message to be ignored by the bot
-        :return:
+        :return: The response from client.room_send
         """
 
         msg = {
@@ -175,7 +175,7 @@ class Bot:
         }
         if bot_ignore:
             msg["org.vranki.hemppa.ignore"] = "true"
-        await self.client.room_send(room.room_id, 'm.room.message', msg)
+        return await self.client.room_send(room.room_id, 'm.room.message', msg)
 
     async def send_location(self, room, body, latitude, longitude, bot_ignore=False):
         """
@@ -193,7 +193,7 @@ class Bot:
             "geo_uri": 'geo:' + str(latitude) + ',' + str(longitude),
             "msgtype": "m.location",
             }
-        await self.client.room_send(room.room_id, 'm.room.message', locationmsg)
+        return await self.client.room_send(room.room_id, 'm.room.message', locationmsg)
 
     async def send_image(self, room, url, body, mimetype=None, width=None, height=None, size=None):
         """
@@ -205,7 +205,7 @@ class Bot:
         :param width: Width in pixel of the image
         :param height: Height in pixel of the image
         :param size: Size in bytes of the image
-        :return:
+        :return: The response from client.room_send
         """
         msg = {
             "url": url,
@@ -225,7 +225,7 @@ class Bot:
         if size:
             msg["info"]["size"] = size
 
-        await self.client.room_send(room.room_id, 'm.room.message', msg)
+        return await self.client.room_send(room.room_id, 'm.room.message', msg)
 
     async def send_msg(self, mxid, roomname, message):
         """
@@ -233,9 +233,9 @@ class Bot:
         :param mxid: A Matrix user id to send the message to
         :param roomname: A Matrix room id to send the message to
         :param message: Text to be sent as message
-        :return bool: Success upon sending the message
+        :return: The response from client.room_send, or False on failure
         """
-        # Sends private message to user. Returns true on success.
+        # Sends private message to user. Returns false on failure
 
         # Find if we already have a common room with user:
         msg_room = None
@@ -260,8 +260,7 @@ class Bot:
             return False
 
         # Send message to the room
-        await self.send_text(msg_room, message)
-        return True
+        return await self.send_text(msg_room, message)
 
     def remove_callback(self, callback):
         for cb_object in self.client.event_callbacks:
@@ -345,8 +344,7 @@ class Bot:
 
         if self.owners_only and not self.is_owner(event):
             self.logger.info(f"Ignoring {event.sender}, because they're not an owner")
-            await self.send_text(room, "Sorry, only bot owner can run commands.")
-            return
+            return await self.send_text(room, "Sorry, only bot owner can run commands.")
 
         # HACK to ignore messages for some time after joining.
         if self.jointime:
@@ -363,22 +361,24 @@ class Bot:
         # Fallback to any declared aliases
         moduleobject = self.modules.get(command) or self.modules.get(self.module_aliases.get(command))
 
-        if moduleobject is not None:
-            if moduleobject.enabled:
-                try:
-                    await moduleobject.matrix_message(self, room, event)
-                except CommandRequiresAdmin:
-                    await self.send_text(room, f'Sorry, you need admin power level in this room to run that command.')
-                except CommandRequiresOwner:
-                    await self.send_text(room, f'Sorry, only bot owner can run that command.')
-                except Exception:
-                    await self.send_text(room, f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
-                    traceback.print_exc(file=sys.stderr)
-        else:
-            self.logger.error(f"Unknown command: {command}")
+        if moduleobject is None:
             # TODO Make this configurable
             # await self.send_text(room,
             #                     f"Sorry. I don't know what to do. Execute !help to get a list of available commands.")
+            self.logger.error(f"Unknown command: {command}")
+            return
+        if moduleobject.enabled:
+            try:
+                res = await moduleobject.matrix_message(self, room, event)
+            except CommandRequiresAdmin:
+                res = await self.send_text(room, f'Sorry, you need admin power level in this room to run that command.')
+            except CommandRequiresOwner:
+                res = await self.send_text(room, f'Sorry, only bot owner can run that command.')
+            except Exception:
+                res = await self.send_text(room, f'Module {command} experienced difficulty: {sys.exc_info()[0]} - see log for details')
+                traceback.print_exc(file=sys.stderr)
+
+            return res
 
     @staticmethod
     def starts_with_command(body):
@@ -405,7 +405,7 @@ class Bot:
         # Automatically leaves rooms where bot is alone.
         if room.member_count == 1 and event.membership=='leave':
             self.logger.info(f"membership event in {room.display_name} ({room.room_id}) with {room.member_count} members by '{event.sender}' - leaving room as i don't want to be left alone!")
-            await self.client.room_leave(room.room_id)
+            return await self.client.room_leave(room.room_id)
 
     def load_module(self, modulename):
         try:
