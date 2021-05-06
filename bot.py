@@ -88,10 +88,10 @@ class Bot:
         if not text and not blob:
             text = f"{url}"
 
-        if matrix_uri is not None:
-            return await self.send_image(room, matrix_uri, text, mimetype, w, h, size)
+        if not matrix_uri:
+            return (None, None)
         else:
-            return await self.send_text(room, "sorry. something went wrong uploading the image to matrix server :(")
+            return (matrix_uri, await self.send_image(room, matrix_uri, text, mimetype, w, h, size))
 
     # Helper function to upload a image from URL to homeserver. Use send_image() to actually send it to room.
     async def upload_image(self, url, blob=False, blob_content_type="image/png"):

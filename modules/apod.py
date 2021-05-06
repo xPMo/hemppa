@@ -98,7 +98,7 @@ class MatrixModule(BotModule):
             matrix_uri = self.matrix_uri_cache.get(apod.date)
             self.logger.debug(f"already uploaded picture {matrix_uri} for date {apod.date}")
         else:
-            matrix_uri = await bot.upload_and_send_image(room, apod.hdurl, f"{apod.title}")
+            matrix_uri, send_response = await bot.upload_and_send_image(room, apod.hdurl, f"{apod.title}")
             send_again = False
 
         if matrix_uri is not None:
@@ -106,8 +106,6 @@ class MatrixModule(BotModule):
             bot.save_settings()
             if send_again:
                 await bot.send_image(room, matrix_uri, f"{apod.title}")
-        else:
-            await bot.send_text(room, "Sorry. Something went wrong uploading the image to Matrix server :(")
         await bot.send_text(room, f"{apod.explanation}")
 
     def get_settings(self):
