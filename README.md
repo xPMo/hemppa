@@ -335,6 +335,67 @@ Example:
 * !cmd add df "df -h"
 * !cmd add whoami "echo You are $MATRIX_USER in room $MATRIX_ROOM."
 
+### Evaluate Code
+
+Used to run arbitrary code in an ephemeral container.
+This is _also_ an easy way to add security issues to your bot,
+or let someone DoS the bot by sending code which invokes `sleep(15)`
+over and over again. (Hemppa always handles one message at a time.)
+
+Code is provided to the configured container on stdin.
+Code will timeout after 15 seconds by default,
+but this can be lowered for any given language.
+
+Both stdout and stderr are printed.
+
+#### Configuration
+
+- !eval (list\|ls\|langs)          - list the current languages configured
+- !eval (add\|new) [language] [container] [command ...] - add a language with the given container and command
+- !eval (rm\|remove) [language]    - remove the given [language]
+- !eval alias [new] [old]          - add [new] as an alias for the existing language [old]
+- !eval (get\|getprop) [language]  - show the configuration for the given language
+- !eval (set\|setprop) [language] [property] [value]    - set the property [property] to [value]
+
+Examples:
+
+- !eval add python python:latest python3 -ic "import sys; sys.ps1 = ''; sys.ps2 = ''"
+- !eval set python timeout 5
+- !eval alias py python
+- !eval rm python
+
+#### Running Code
+
+There are a number of ways to run code:
+
+- !eval [codeblock]
+- !eval run [language] [code]
+- !eval[language] [code]
+- ![language] [code]
+- ... [marked codeblock] ...
+
+If text is found in a `<code>` tag in the formatted body,
+then that text is used as input.
+If no block or no formatted body is found,
+then whatever text follows [language] is used as input.
+If [language] is provided, then it will be used to look up the language.
+
+Otherwise, the language associated with the code block (as in `<code class="language-python">`)
+is used to look up the language.
+
+Finally, if a marked codeblock is found (`<code class="language-python!">`),
+it will be evaluated even if `!eval`, `!python`, etc. was not provided.
+
+In Element, a `<code>` block with an associated language can be created by using backtick code gates,
+and appending the language name to the opening gate.
+Here `¶` represents the end of a line, do not include it in your message.
+
+```markdown
+```python
+print("Hello world!)
+```¶
+```
+
 ### Astronomy Picture of the Day
 
 Upload and send latest astronomy picture of the day to the room.
