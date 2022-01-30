@@ -20,7 +20,7 @@ class MatrixModule(PollingService):
 
         last_status = self.accountroomid_laststatus.get(account+roomid, False)
         if send_messages and last_status != is_open:
-            await bot.send_text(bot.get_room_by_id(roomid), text)
+            await bot.send_text(bot.get_room_by_id(roomid), None, text)
             self.accountroomid_laststatus[account+roomid] = is_open
             bot.save_settings()
 

@@ -30,14 +30,14 @@ class MatrixModule(BotModule):
             }
             self.rooms[room.room_id] = welcome_settings
             bot.save_settings()
-            await bot.send_text(room, "Welcome settings configured: {settings}".format(settings=welcome_settings))
+            await bot.send_text(room, event, "Welcome settings configured: {settings}".format(settings=welcome_settings))
         elif args[0] == "notify_departure":
             notify_departure = True if args[1] == "True" else False
             self.rooms[room.room_id]["notify_departure"] = notify_departure
             bot.save_settings()
-            await bot.send_text(room, "notify_departure set to {setting}".format(setting=notify_departure))
+            await bot.send_text(room, event, "notify_departure set to {setting}".format(setting=notify_departure))
         elif args[0] == "settings":
-            await bot.send_text(room, "Welcome settings: {settings}".format(settings=self.rooms[room.room_id]))
+            await bot.send_text(room, event, "Welcome settings: {settings}".format(settings=self.rooms[room.room_id]))
 
     def get_settings(self):
         data = super().get_settings()

@@ -77,7 +77,7 @@ class MatrixModule(BotModule):
             # Insert the server counter at the begging of the servers string
             servers_in_room = f"({server_count}) {servers_in_room}"
             # Send it back to the command executor
-            await bot.send_text(room, servers_in_room)
+            await bot.send_text(room, event, servers_in_room)
         # Else if the joined_members failed to get the joined room members
         else:
             # Then raise the error and the bot module will handle everything else
@@ -91,7 +91,7 @@ class MatrixModule(BotModule):
         :param room: nio.MatrixRoom
         :return: None
         """
-        await bot.send_text(room, f"Member count: {room.member_count}")
+        await bot.send_text(room, event, f"Member count: {room.member_count}")
 
     @staticmethod
     async def banned_members(bot, room: nio.MatrixRoom):
@@ -129,7 +129,7 @@ class MatrixModule(BotModule):
             # Insert the banned members counter to the beginning of the banned_members string
             banned_members = f"({banned_members_count}) {banned_members}"
             # Send it back to the command executor
-            await bot.send_text(room, banned_members)
+            await bot.send_text(room, event, banned_members)
         # Otherwise res is a typeof error so
         else:
             # Raise the error and the bot module will handle everything else
@@ -173,7 +173,7 @@ class MatrixModule(BotModule):
             # Insert the kicked members counter to the beginning of the banned_members string
             kicked_members = f"({kicked_members_count}) {kicked_members}"
             # Send it back to the command executor
-            await bot.send_text(room, kicked_members)
+            await bot.send_text(room, event, kicked_members)
         # Otherwise res is a typeof error so
         else:
             # Raise the error and the bot module will handle everything else
@@ -207,7 +207,7 @@ class MatrixModule(BotModule):
             # Stringify the event's content
             result = str(res.content)
             # Respond to the command executor
-            await bot.send_text(room, result)
+            await bot.send_text(room, event, result)
         # Otherwise res is an error
         else:
             # Raise the error and the bot module will handle the rest
@@ -224,12 +224,12 @@ class MatrixModule(BotModule):
             if "#" in target:
                 targetid = await bot.get_room_by_alias(target)
                 if not targetid:
-                    await bot.send_text(room, f"Bot is not on room {targetid}?")
+                    await bot.send_text(room, event, f"Bot is not on room {targetid}?")
                     return
             elif "!" in target:
                 targetid = target
             else:
-                await bot.send_text(room, f"Give a room alias (starts with #) or room id (starts with !)")
+                await bot.send_text(room, event, f"Give a room alias (starts with #) or room id (starts with !)")
                 return
 
             tombstone_event = {
@@ -238,9 +238,9 @@ class MatrixModule(BotModule):
                 }
             response = await bot.client.room_put_state(room.room_id, 'm.room.tombstone', tombstone_event)
             if type(response) == nio.RoomPutStateResponse:
-                await bot.send_text(room, f"See you in the new room!")
+                await bot.send_text(room, event, f"See you in the new room!")
                 await bot.client.room_leave(room.room_id)
             else:
-                await bot.send_text(room, f"Error creating tombstone event: {response}")
+                await bot.send_text(room, event, f"Error creating tombstone event: {response}")
             return
-        await bot.send_text(room, f"Usage: !room tombstone #room:server.org")
+        await bot.send_text(room, event, f"Usage: !room tombstone #room:server.org")
