@@ -36,9 +36,9 @@ class MatrixModule(BotModule):
             })
             self.welcome_settings = welcome_settings
             bot.save_settings()
-            await bot.send_text(room, "Welcome settings configured for server: {settings}".format(settings=welcome_settings))
+            await bot.send_text(room, event, "Welcome settings configured for server: {settings}".format(settings=welcome_settings))
         elif args[0] == "settings":
-            await bot.send_text(room, "Welcome settings for server: {settings}".format(settings=self.welcome_settings))
+            await bot.send_text(room, event, "Welcome settings for server: {settings}".format(settings=self.welcome_settings))
 
     def get_settings(self):
         data = super().get_settings()

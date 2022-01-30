@@ -67,7 +67,7 @@ class MatrixModule(BotModule):
 
     async def matrix_message(self, bot, room, event):
         if not self.service:
-            await bot.send_text(room, 'Google calendar not set up for this bot.')
+            await bot.send_text(room, event, 'Google calendar not set up for this bot.')
             return
         args = event.body.split()
         events = []
@@ -79,7 +79,7 @@ class MatrixModule(BotModule):
                     self.logger.info(f'Listing events in cal {calid}')
                     events = events + self.list_today(calid)
             if args[1] == 'list':
-                await bot.send_text(room, 'Calendars in this room: ' + str(self.calendar_rooms.get(room.room_id)))
+                await bot.send_text(room, event, 'Calendars in this room: ' + str(self.calendar_rooms.get(room.room_id)))
                 return
 
         elif len(args) == 3:
@@ -93,7 +93,7 @@ class MatrixModule(BotModule):
                     if calid not in self.calendar_rooms[room.room_id]:
                         self.calendar_rooms[room.room_id].append(calid)
                     else:
-                        await bot.send_text(room, 'This google calendar already added in this room!')
+                        await bot.send_text(room, event, 'This google calendar already added in this room!')
                         return
                 else:
                     self.calendar_rooms[room.room_id] = [calid]
@@ -102,7 +102,7 @@ class MatrixModule(BotModule):
 
                 bot.save_settings()
 
-                await bot.send_text(room, 'Added new google calendar to this room')
+                await bot.send_text(room, event, 'Added new google calendar to this room')
                 return
 
             if args[1] == 'del':
@@ -118,7 +118,7 @@ class MatrixModule(BotModule):
 
                 bot.save_settings()
 
-                await bot.send_text(room, 'Removed google calendar from this room')
+                await bot.send_text(room, event, 'Removed google calendar from this room')
                 return
 
         else:
@@ -131,12 +131,12 @@ class MatrixModule(BotModule):
             await self.send_events(bot, events, room)
         else:
             self.logger.info(f'No events found')
-            await bot.send_text(room, 'No events found, try again later :)')
+            await bot.send_text(room, event, 'No events found, try again later :)')
 
     async def send_events(self, bot, events, room):
         for event in events:
             start = event['start'].get('dateTime', event['start'].get('date'))
-            await bot.send_html(room, f'{self.parse_date(start)} <a href="{event["htmlLink"]}">{event["summary"]}</a>',
+            await bot.send_html(room, event, f'{self.parse_date(start)} <a href="{event["htmlLink"]}">{event["summary"]}</a>',
                                 f'{self.parse_date(start)} {event["summary"]}')
 
     def list_upcoming(self, calid):
