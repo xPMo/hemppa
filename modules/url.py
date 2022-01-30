@@ -144,7 +144,7 @@ class MatrixModule(BotModule):
                     msg = f"Description: {description}"
 
                 if msg.strip(): # Evaluates to true on non-empty strings
-                    await self.bot.send_text(room, msg, msgtype=self.type, bot_ignore=True)
+                    await self.bot.send_text(room, event, msg, msgtype=self.type, bot_ignore=True)
         except Exception as e:
             self.logger.warning(f"Unexpected error in url module text_cb: {e}")
             traceback.print_exc(file=sys.stderr)
@@ -240,7 +240,7 @@ class MatrixModule(BotModule):
             self.status[room.room_id] = args[0].upper()
             bot.save_settings()
             await bot.send_text(
-                room, f"Ok, {self.STATUSES.get(self.status[room.room_id])}"
+                room, event, f"Ok, {self.STATUSES.get(self.status[room.room_id])}"
             )
             return
 
@@ -248,7 +248,7 @@ class MatrixModule(BotModule):
         elif len(args) == 1 and args[0] == "status":
             status = self.STATUSES.get(self.status.get(room.room_id, "OFF")) + f', URL blacklist: {self.blacklist}'
             await bot.send_text(
-                room, status
+                room, event, status
             )
             return
 
@@ -257,7 +257,7 @@ class MatrixModule(BotModule):
             bot.must_be_owner(event)
             self.type = "m.notice"
             bot.save_settings()
-            await bot.send_text(room, "Sending titles as notices from now on.")
+            await bot.send_text(room, event, "Sending titles as notices from now on.")
             return
 
         # show status
@@ -265,7 +265,7 @@ class MatrixModule(BotModule):
             bot.must_be_owner(event)
             self.type = "m.text"
             bot.save_settings()
-            await bot.send_text(room, "Sending titles as text from now on.")
+            await bot.send_text(room, event, "Sending titles as text from now on.")
             return
 
         # set blacklist
@@ -276,12 +276,12 @@ class MatrixModule(BotModule):
             else:
                 self.blacklist = args[1].split(',')
             bot.save_settings()
-            await bot.send_text(room, f"Blacklisted URLs set to {self.blacklist}")
+            await bot.send_text(room, event, f"Blacklisted URLs set to {self.blacklist}")
             return
 
         # invalid command
         await bot.send_text(
-            room,
+            room, event,
             "Sorry, I did not understand. See README for command list.",
         )
 

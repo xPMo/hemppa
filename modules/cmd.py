@@ -25,11 +25,11 @@ class MatrixModule(BotModule):
             command_name = args[1]
             bot.must_be_owner(event)
             if command_name in self.commands:
-                await bot.send_text(room, f'Removed "{self.commands[command_name]}"')
+                await bot.send_text(room, event, f'Removed "{self.commands[command_name]}"')
                 del self.commands[command_name]
                 bot.save_settings()
             else:
-                await bot.send_text(room, f'Could not find command "{command_name}"')
+                await bot.send_text(room, event, f'Could not find command "{command_name}"')
         # Message body possibilities:
         #   ["add", "command_name", "echo", "Hello", "world"]
         elif args[0] == 'add':
@@ -38,18 +38,18 @@ class MatrixModule(BotModule):
             bot.must_be_owner(event)
             self.commands[command_name] = command_body
             bot.save_settings()
-            await bot.send_text(room, f'Added "{command_name}" -> "{command_body}".')
+            await bot.send_text(room, event, f'Added "{command_name}" -> "{command_body}".')
         # Message body possibilities:
         #   ["list"]
         elif args[0] == 'list':
             if len(self.commands) == 0:
-                await bot.send_text(room, "No known commands")
+                await bot.send_text(room, event, "No known commands")
             else:
                 known_commands = "Known commands:\n"
                 for command_name in self.commands.keys():
                     command_body = self.commands[command_name]
                     known_commands += f' - "{command_name}" -> "{command_body}"\n'
-                await bot.send_text(room, known_commands)
+                await bot.send_text(room, event, known_commands)
         # Message body possibilities:
         #   ["command_name"]
         else:
@@ -62,7 +62,7 @@ class MatrixModule(BotModule):
                 out = self.run_command(target_command, event.sender, room.display_name)
                 await self.send_output(bot, room, out)
             else:
-                await bot.send_text(room, 'Unknown command.')
+                await bot.send_text(room, event, 'Unknown command.')
 
     def help(self):
         return 'Runs shell commands'
@@ -102,4 +102,4 @@ class MatrixModule(BotModule):
             html = "<pre>" + output + "</pre>"
         if len(output) == 0:
             output = html = '(No output returned)'
-        await bot.send_html(room, html, output)
+        await bot.send_html(room, event, html, output)

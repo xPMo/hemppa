@@ -64,10 +64,10 @@ class PollingService(BotModule):
 
         if len(args) == 2:
             if args[1] == 'list':
-                await bot.send_text(room,
+                await bot.send_text(room, event,
                                     f'{self.service_name} accounts in this room: {self.account_rooms.get(room.room_id) or []}')
             elif args[1] == 'debug':
-                await bot.send_text(room,
+                await bot.send_text(room, event,
                                     f"{self.service_name} accounts: {self.account_rooms.get(room.room_id) or []} - known ids: {self.known_ids}\n" \
                                     f"Next poll in this room at {self.next_poll_time.get(room.room_id)} - in {self.next_poll_time.get(room.room_id) - datetime.now()}")
             elif args[1] == 'poll':
@@ -81,7 +81,7 @@ class PollingService(BotModule):
                 bot.must_be_admin(room, event)
                 self.account_rooms[room.room_id] = []
                 bot.save_settings()
-                await bot.send_text(room, f'Cleared all {self.service_name} accounts from this room')
+                await bot.send_text(room, event, f'Cleared all {self.service_name} accounts from this room')
         if len(args) == 3:
             if args[1] == 'add':
                 bot.must_be_admin(room, event)
@@ -93,12 +93,12 @@ class PollingService(BotModule):
                     if account not in self.account_rooms[room.room_id]:
                         self.account_rooms[room.room_id].append(account)
                     else:
-                        await bot.send_text(room, 'This account already added in this room!')
+                        await bot.send_text(room, event, 'This account already added in this room!')
                         return
                 else:
                     self.account_rooms[room.room_id] = [account]
                 bot.save_settings()
-                await bot.send_text(room, f'Added {self.service_name} account {account} to this room.')
+                await bot.send_text(room, event, f'Added {self.service_name} account {account} to this room.')
 
             elif args[1] == 'del':
                 bot.must_be_admin(room, event)
@@ -112,7 +112,7 @@ class PollingService(BotModule):
                 self.logger.info(f'{self.service_name} accounts now for this room {self.account_rooms.get(room.room_id)}')
 
                 bot.save_settings()
-                await bot.send_text(room, f'Removed {self.service_name} account from this room')
+                await bot.send_text(room, event, f'Removed {self.service_name} account from this room')
 
     def get_settings(self):
         data = super().get_settings()

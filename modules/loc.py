@@ -41,13 +41,13 @@ class MatrixModule(BotModule):
         plain = sender + ' 🚩 ' + osm_link
         html = f'{sender} 🚩 <a href="{osm_link}">{location_text}</a>'
 
-        await self.bot.send_html(room, html, plain)
+        await self.bot.send_html(room, event, html, plain)
 
     async def matrix_message(self, bot, room, event):
         args = event.body.split()
         args.pop(0)
         if len(args) == 0:
-            await bot.send_text(room, 'Usage: !loc <location name>')
+            await bot.send_text(room, event, 'Usage: !loc <location name>')
         else:
             query = event.body[4:]
             geolocator = Nominatim(user_agent=bot.appid)
@@ -55,9 +55,9 @@ class MatrixModule(BotModule):
             location = geolocator.geocode(query)
             self.logger.info('loc rx %s', location)
             if location:
-                await bot.send_location(room, location.address, location.latitude, location.longitude)
+                await bot.send_location(room, event, location.address, location.latitude, location.longitude)
             else:
-                await bot.send_text(room, "Can't find " + query + " on map!")
+                await bot.send_text(room, event, "Can't find " + query + " on map!")
 
     def help(self):
         return 'Search for locations and display Matrix location events as OSM links'

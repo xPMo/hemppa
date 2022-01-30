@@ -22,7 +22,7 @@ class BotModule(ABC):
                 args.pop(0)
 
                 # Echo what they said back
-                await bot.send_text(room, ' '.join(args))
+                await bot.send_text(room, event, ' '.join(args))
 
             def help(self):
                 return 'Echoes back what user has said'
